@@ -13,7 +13,7 @@ void threadFunc( int lengthOfLoop, int threadNum ) {
     char buf1[100], buf2[100];
     sprintf( buf1, "thread%dtestfile.txt.", threadNum );	
     for( int i = 0; i < lengthOfLoop; i++ ) {
-	int fd1 = open(buf1, O_WRONLY | O_CREAT | O_TRUNC, 777);
+	int fd1 = open(buf1, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	sprintf( buf2, "I have written to this file %d times.", i+1 );	
     	write(fd1, buf2, strlen(buf2));
 	close(fd1);
@@ -30,8 +30,9 @@ int main( int argc, char** argv ) {
     count = 1;
     for( int i = 0; i < 100; i++) {
     	if( count%2 == 0) fd1 = open("systestfile.txt", O_WRONLY | O_CREAT | O_TRUNC, 777);
-	else fd2 = open("systestfile", O_WRONLY | O_CREAT | O_TRUNC, 777);
-    	if( rc < 0 ) {
+	else fd2 = open("systestfile.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    	
+	if( fd1 < 0 ) {
 		perror("r1");
 		return 1;
     	}
@@ -43,9 +44,11 @@ int main( int argc, char** argv ) {
 	if( count%3 == 0 && v.size() > 0 ) { delete(v[v.size()-1]); v.pop_back(); }
 	v.push_back(ptr);
 
-	sprintf( buf, "I have written to this file %d times.", count );	
-    	if( count%2 == 0) rc = write(fd1, buf, strlen(buf));
-	else rc = write(fd2, buf, strlen(buf));
+	sprintf( buf, "I have written to this file %d times.\n", count );
+	for( int j = 0; j < 1000; j++ ) {	
+    		if( count%2 == 0) rc = write(fd1, buf, strlen(buf));
+		else rc = write(fd2, buf, strlen(buf));
+	}
 	sleep(1);
 	if( count % 2 == 0 ) close(fd1);
 	else close(fd2);
@@ -61,7 +64,7 @@ int main( int argc, char** argv ) {
 
     totalBytes = 500 * v.size();
     sprintf( buf, "There was %d bytes allocated at the end of the program.", totalBytes );	
-    fd2 = open("totalMemoryAllcated.txt", O_WRONLY | O_CREAT | O_TRUNC, 777);
+    fd2 = open("totalMemoryAllcated.txt", O_WRONLY | O_CREAT | O_TRUNC, 0644);
     rc = write(fd2, buf, strlen(buf));
 
     return 0;
