@@ -1,0 +1,30 @@
+cpudist: Summarize on- and off-CPU time per task as a histogram.
+cpuunclaimed: Sample CPU run queues and calculate unclaimed idle CPU. 
+dirtop: File reads and writes by directories. Top for directories
+deadlock: Detect potential deadlocks on a running process
+filelife: Trace the lifespan of short-lived files.
+fileslower: Trace slow synchronous file reads and writes.
+funccount: Count kernel function calls.
+funcinterval: Time interval between the same function as a histogram. 
+klockstat: Traces kernel mutex lock events and display locks statistics. 
+llcstat: Summarize CPU cache references and misses by process.
+memleak: Display outstanding memory allocations to find memory leaks.
+profile: Profile CPU usage by sampling stack traces at a timed interval. 
+readahead: Show performance of read-ahead cache
+ucalls: Summarize method calls or Linux syscalls in high-level languages. 
+ugc: Trace garbage collection events in high-level languages.
+uobjnew: Summarize object allocation events by object type and number of bytes allocated.
+ustat: Collect events such as GCs, thread creations, object allocations, exceptions and more in high-level languages. 
+uthreads: Trace thread creation events in Java and raw pthreads.
+cachetop: Trace page cache hit/miss ratio by processes.
+cpuwalk: Sample which CPUs are executing processes.
+loads: Print load averages.
+naptime: Show voluntary sleep calls.
+opensnoop: Trace open() syscalls showing filenames.
+pidpersec: Count new processes (via fork). 
+syncsnoop: Trace sync() variety of syscalls.
+syscount: Count system calls.
+threadsnoop: List new thread creation.
+writeback: Trace file system writeback events with details. 
+dcsnoop: Trace directory entry cache (dcache) lookups.
+
