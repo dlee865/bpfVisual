@@ -19,6 +19,7 @@ from bcc import BPF
 from time import sleep, strftime
 import argparse
 import signal
+import csv
 from subprocess import call
 
 # arguments
@@ -171,7 +172,7 @@ b.attach_kprobe(event="blk_account_io_done",
     fn_name="trace_req_completion")
 
 print('Tracing... Output every %d secs. Hit Ctrl-C to end' % interval)
-
+output = open('bIO_top.csv', mode='w')
 # cache disk major,minor -> diskname
 disklookup = {}
 with open(diskstats) as stats:
@@ -181,6 +182,8 @@ with open(diskstats) as stats:
 
 # output
 exiting = 0
+output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+output_writer.writerow( [ "PID","COMM", "D", "MAJ", "MIN", "DISK", "I/O", "Kbytes", "AVGms" ] )
 while 1:
     try:
         sleep(interval)
@@ -216,6 +219,10 @@ while 1:
             k.name.decode('utf-8', 'replace'), "W" if k.rwflag else "R",
             k.major, k.minor, diskname, v.io, v.bytes / 1024, avg_ms))
 
+        output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        output_writer.writerow( [ (k.pid,
+            k.name.decode('utf-8', 'replace'), "W" if k.rwflag else "R",
+            k.major, k.minor, diskname, v.io, v.bytes / 1024, avg_ms) ] )
         line += 1
         if line >= maxrows:
             break
