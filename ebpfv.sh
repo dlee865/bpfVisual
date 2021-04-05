@@ -1,9 +1,10 @@
 #!/bin/bash
 
 iterations=$1
+trace_process=$2
 
 echo "Starting benchmark program to run for 100 seconds."
-./a.out > /dev/null &
+./benchmark/benchmark > /dev/null &
 
 echo "Running cachestat for $1 seconds."
 ./tools/cachestat.py 1 $iterations > output/cache_stdout &
@@ -11,13 +12,23 @@ echo "Running cachestat for $1 seconds."
 echo "Running llcstat for $1 seconds."
 ./tools/llcstat.py $iterations > output/llc_stdout &
 
-echo "Running biotop for $1 seconds, 1 times."
-./tools/biotop.py $iterations 1 | grep "a.out" > output/biotop_stdout & 
+if [ -z "$trace_process" ]
+then
+    echo "Running biotop for all processes for $1 seconds, 1 times."
+    ./tools/biotop.py $iterations 1 > output/biotop_stdout & 
+else
+    echo "Running biotop on $2 for $1 seconds, 1 times."
+    ./tools/biotop.py $iterations 1 | grep $2 > output/biotop_stdout & 
+fi
 
 
 echo "...running..."
 
-wait
+while [ wait ] 
+do
+    echo "..."
+    sleep 10
+done
 
 echo "Finished."
 

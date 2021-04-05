@@ -172,7 +172,7 @@ b.attach_kprobe(event="blk_account_io_done",
     fn_name="trace_req_completion")
 
 print('Tracing... Output every %d secs. Hit Ctrl-C to end' % interval)
-output = open('bIO_top.csv', mode='w')
+output = open('output/bIO_top.csv', mode='w')
 # cache disk major,minor -> diskname
 disklookup = {}
 with open(diskstats) as stats:
