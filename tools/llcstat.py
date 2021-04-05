@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 #
 # llcstat.py Summarize cache references and cache misses by PID.
 #            Cache reference and cache miss are corresponding events defined in
@@ -20,6 +20,7 @@ from __future__ import print_function
 import argparse
 from bcc import BPF, PerfType, PerfHWConfig
 import signal
+import csv
 from time import sleep
 
 parser = argparse.ArgumentParser(
@@ -33,6 +34,9 @@ parser.add_argument(
 parser.add_argument("--ebpf", action="store_true",
     help=argparse.SUPPRESS)
 args = parser.parse_args()
+
+output = open('output/llc_stat.csv', mode='w')
+
 
 # load BPF program
 bpf_text="""
@@ -94,6 +98,9 @@ for (k, v) in b.get_table('miss_count').items():
 print('PID      NAME             CPU     REFERENCE         MISS    HIT%')
 tot_ref = 0
 tot_miss = 0
+
+output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
 for (k, v) in b.get_table('ref_count').items():
     try:
         miss = miss_count[(k.pid, k.cpu, k.name)]
@@ -106,5 +113,10 @@ for (k, v) in b.get_table('ref_count').items():
     print('{:<8d} {:<16s} {:<4d} {:>12d} {:>12d} {:>6.2f}%'.format(
         k.pid, k.name.decode('utf-8', 'replace'), k.cpu, v.value, miss,
         (float(hit) / float(v.value)) * 100.0))
+        
+    output_writer.writerow( [ k.pid, k.name.decode('utf-8', 'replace'), k.cpu, v.value, miss, (float(hit) / float(v.value) * 100.0) ] )
+
+
+
 print('Total References: {} Total Misses: {} Hit Rate: {:.2f}%'.format(
     tot_ref, tot_miss, (float(tot_ref - tot_miss) / float(tot_ref)) * 100.0))
