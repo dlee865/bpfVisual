@@ -24,11 +24,14 @@ fi
 
 echo "...running..."
 
-while [ wait ] 
+while [[ -n $(jobs -r) ]] 
 do
-    echo "..."
     sleep 10
+    echo "...running..."
 done
+
+rm *.txt
+rm *.txt.
 
 echo "Finished."
 
