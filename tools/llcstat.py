@@ -30,11 +30,13 @@ parser.add_argument(
     "-c", "--sample_period", type=int, default=100,
     help="Sample one in this many number of cache reference / miss events")
 parser.add_argument(
+    "P_ID", nargs="?", default=99999999, help="PID to analyze")
+parser.add_argument(
     "duration", nargs="?", default=10, help="Duration, in seconds, to run")
 parser.add_argument("--ebpf", action="store_true",
     help=argparse.SUPPRESS)
 args = parser.parse_args()
-
+P_ID = int(args.P_ID)
 output = open('output/llc_stat.csv', mode='w')
 
 
@@ -100,6 +102,7 @@ tot_ref = 0
 tot_miss = 0
 
 output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+output_writer.writerow( [ "PID","NAME", "CPU", "REFERENCE", "MISS", "HIT%"] )
 
 for (k, v) in b.get_table('ref_count').items():
     try:
@@ -110,11 +113,11 @@ for (k, v) in b.get_table('ref_count').items():
     tot_miss += miss
     # This happens on some PIDs due to missed counts caused by sampling
     hit = (v.value - miss) if (v.value >= miss) else 0
-    print('{:<8d} {:<16s} {:<4d} {:>12d} {:>12d} {:>6.2f}%'.format(
-        k.pid, k.name.decode('utf-8', 'replace'), k.cpu, v.value, miss,
-        (float(hit) / float(v.value)) * 100.0))
-        
-    output_writer.writerow( [ k.pid, k.name.decode('utf-8', 'replace'), k.cpu, v.value, miss, (float(hit) / float(v.value) * 100.0) ] )
+    if k.pid == P_ID and P_ID != 99999999:
+        print('{:<8d} {:<16s} {:<4d} {:>12d} {:>12d} {:>6.2f}%'.format(
+            k.pid, k.name.decode('utf-8', 'replace'), k.cpu, v.value, miss,
+            (float(hit) / float(v.value)) * 100.0))
+        output_writer.writerow( [ k.pid, k.name.decode('utf-8', 'replace'), k.cpu, v.value, miss, (float(hit) / float(v.value) * 100.0) ] )
 
 
 

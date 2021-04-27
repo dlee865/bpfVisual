@@ -37,6 +37,8 @@ parser.add_argument("-C", "--noclear", action="store_true",
     help="don't clear the screen")
 parser.add_argument("-r", "--maxrows", default=20,
     help="maximum rows to print, default 20")
+parser.add_argument("P_ID", nargs="?", default=99999999,
+    help="PID to analyze")
 parser.add_argument("interval", nargs="?", default=1,
     help="output interval, in seconds")
 parser.add_argument("count", nargs="?", default=99999999,
@@ -45,6 +47,7 @@ parser.add_argument("--ebpf", action="store_true",
     help=argparse.SUPPRESS)
 args = parser.parse_args()
 interval = int(args.interval)
+P_ID = int(args.P_ID)
 countdown = int(args.count)
 maxrows = int(args.maxrows)
 clear = not int(args.noclear)
@@ -215,14 +218,15 @@ while 1:
 
         # print line
         avg_ms = (float(v.us) / 1000) / v.io
-        print("%-6d %-16s %1s %-3d %-3d %-8s %5s %7s %6.2f" % (k.pid,
-            k.name.decode('utf-8', 'replace'), "W" if k.rwflag else "R",
-            k.major, k.minor, diskname, v.io, v.bytes / 1024, avg_ms))
+        if k.pid == P_ID and P_ID != 99999999:
+            print("%-6d %-16s %1s %-3d %-3d %-8s %5s %7s %6.2f" % (k.pid,
+                k.name.decode('utf-8', 'replace'), "W" if k.rwflag else "R",
+                k.major, k.minor, diskname, v.io, v.bytes / 1024, avg_ms))
 
-        output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        output_writer.writerow( [ (k.pid,
-            k.name.decode('utf-8', 'replace'), "W" if k.rwflag else "R",
-            k.major, k.minor, diskname, v.io, v.bytes / 1024, avg_ms) ] )
+            output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            output_writer.writerow( [ (k.pid,
+                k.name.decode('utf-8', 'replace'), "W" if k.rwflag else "R",
+                k.major, k.minor, diskname, v.io, v.bytes / 1024, avg_ms) ] )
         line += 1
         if line >= maxrows:
             break

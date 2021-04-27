@@ -11,20 +11,14 @@ echo "Starting benchmark program to run for 100 seconds."
 p_pid=$!
 echo "$p_pid"
 
-echo "Running cachestat for $1 seconds."
-./tools/cachestat.py 1 $iterations > output/cache_stdout &
+#echo "Running cachestat for $1 seconds."
+#./tools/cachestat.py 1 $iterations > output/cache_stdout &
 
 echo "Running llcstat for $1 seconds."
-./tools/llcstat.py $iterations > output/llc_stdout &
+./tools/llcstat.py $p_pid $iterations > output/llc_stdout &
 
-if [ -z "$trace_process" ]
-then
-    echo "Running biotop for all processes for $1 seconds, 1 times."
-    ./tools/biotop.py $iterations 1 > output/biotop_stdout & 
-else
-    echo "Running biotop on $2 for $1 seconds, 1 times."
-    ./tools/biotop.py $iterations 1 | grep $2 > output/biotop_stdout & 
-fi
+echo "Running biotop for all processes for $1 seconds, 1 times."
+./tools/biotop.py $p_pid $iterations 1 > output/biotop_stdout & 
 
 
 echo "...running..."
