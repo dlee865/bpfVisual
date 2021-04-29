@@ -1,7 +1,6 @@
 #!/bin/bash
 
 
-# optional timing parameter 
 iterations=$1
 trace_process=$2
 
@@ -11,14 +10,18 @@ echo "Starting benchmark program to run for 100 seconds."
 p_pid=$!
 echo "$p_pid"
 
-#echo "Running cachestat for $1 seconds."
-#./tools/cachestat.py 1 $iterations > output/cache_stdout &
+echo "Running cachestat for $1 seconds."
+python3 ./tools/cachestat.py 1 $iterations > output/cache_stdout &
 
 echo "Running llcstat for $1 seconds."
-./tools/llcstat.py $p_pid $iterations > output/llc_stdout &
+python3 ./tools/llcstat.py $p_pid $iterations > output/llc_stdout &
 
-echo "Running biotop for all processes for $1 seconds, 1 times."
-./tools/biotop.py $p_pid $iterations 1 > output/biotop_stdout & 
+echo "Running biotop for p_pid processes for $1 seconds, 1 times."
+python3 ./tools/biotop.py $p_pid $iterations 1 > output/biotop_stdout & 
+
+echo "Running dcsnoop to collect all p_pid's dir cache lookups"
+python3 ./tools/dcsnoop.py -d $iterations -a | grep "$p_pid" > output/dcsnoop_stdout &
+
 
 
 echo "...running..."
