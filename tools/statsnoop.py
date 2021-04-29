@@ -14,6 +14,7 @@
 
 from __future__ import print_function
 from bcc import BPF
+import csv
 import argparse
 
 # arguments
@@ -33,6 +34,8 @@ parser.add_argument("-x", "--failed", action="store_true",
     help="only show failed stats")
 parser.add_argument("-p", "--pid",
     help="trace this PID only")
+parser.add_argument("timeInterval", nargs="?", default=1,
+    help="runtime interval, in seconds")
 parser.add_argument("--ebpf", action="store_true",
     help=argparse.SUPPRESS)
 args = parser.parse_args()
@@ -132,10 +135,13 @@ start_ts = 0
 prev_ts = 0
 delta = 0
 
+output = open('output/statsnoop.csv', mode='w')
 # header
 if args.timestamp:
     print("%-14s" % ("TIME(s)"), end="")
 print("%-6s %-16s %4s %3s %s" % ("PID", "COMM", "FD", "ERR", "PATH"))
+output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+output_writer.writerow( [ "PID","COMM", "FD", "ERR", "PATH" ] )
 
 # process event
 def print_event(cpu, data, size):
@@ -162,12 +168,17 @@ def print_event(cpu, data, size):
     print("%-6d %-16s %4d %3d %s" % (event.pid,
         event.comm.decode('utf-8', 'replace'), fd_s, err,
         event.fname.decode('utf-8', 'replace')))
+    output_writer.writerow( [ str(event.pid), str(event.comm.decode('utf-8', 'replace')). fd_s, err, str(event.fname.decode('utf-8', 'replace')) ] )
 
 # loop with callback to print_event
 b["events"].open_perf_buffer(print_event, page_cnt=64)
+countdown = args.timeInterval
 while 1:
     try:
         b.perf_buffer_poll()
+        sleep(1)
+        countdown -= 1
+        if countdown == 0: exit()
     except KeyboardInterrupt:
         exit()
 
