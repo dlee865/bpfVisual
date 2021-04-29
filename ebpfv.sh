@@ -1,33 +1,60 @@
 #!/bin/bash
 
-#usage sudo ./ebpfv.sh [proc_name] [trace_dur]
+#usage sudo ./ebpfv.sh [proc_name] [trace_dur] (optional [-m, -f, -k])
 
 proc_name=$1
 trace_dur=$2
+
+run_memoryhier=0
+run_filesys=0
+run_syscalls=0
+
+# check flags to determine which tools to run
+for flag in "$@"
+do
+    if [ "$flag" == "-m" ]; then
+        echo "Tracing memory hierarchy."
+        run_memoryhier=1
+    fi
+    if [ "$flag" == "-f" ]; then
+        echo "Tracing file system."
+        run_filesys=1
+    fi
+    if [ "$flag" == "-k" ]; then
+        echo "Tracing system calls."
+        run_syscalls=1
+    fi
+done
+
 
 echo "Starting benchmark program to run for 100 seconds."
 ./benchmark/benchmark > /dev/null &
 
 # get the pid based on name of processes passed in
-p_pid=$(pidof "$1")
+p_pid=$( pidof "$1" | awk '{print $1}' )
 
 ######### MEMORY HIERARCHY ##########
+if [ $run_memoryhier -ne 0 ]; then
+    ##### LLC Stat #####
+    echo "Running llcstat on $p_pid for $trace_dur seconds."
+    python3 ./tools/llcstat.py $p_pid $trace_dur > output/llc_stdout &
 
-##### LLC Stat #####
-echo "Running llcstat on $p_pid for $trace_dur seconds."
-python3 ./tools/llcstat.py $p_pid $trace_dur > output/llc_stdout &
-
-##### BIO Top #####
-echo "Running biotop on $p_pid for $trace_dur seconds."
-python3 ./tools/biotop.py $p_pid $trace_dur 1 > output/biotop_stdout &
+    ##### BIO Top #####
+    echo "Running biotop on $p_pid for $trace_dur seconds."
+    python3 ./tools/biotop.py $p_pid $trace_dur 1 > output/biotop_stdout &
+fi
 
 ########## File System #############
-echo "Running funccount on $p_pid for $trace_dur seconds."
-python3 ./tools/funccount.py -p $p_pid -d $trace_dur 'vfs_*' > output/funccount_stdout &
-
-
+if [ $run_filesys -ne 0 ]; then
+    echo "Running funccount on $p_pid for $trace_dur seconds."
+    python3 ./tools/funccount.py -p $p_pid -d $trace_dur 'vfs_*' > output/funccount_stdout &
+fi
 
 ##### UThreads #####
+if [ $run_syscalls -ne 0 ]; then
+    echo "Running uthreads on $p_pid of $trace_dur seconds."
+    python3 ./tools/uthreads.py -l none $p_pid > output/uthread_stdout &
+fi
 
 
 ##### Ucalls #####
