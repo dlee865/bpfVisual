@@ -141,6 +141,9 @@ output = open('output/cache_stat.csv', mode='w')
 
 # header
 print("%-11s %-6s %-16s %1s %s" % ("TIME(s)", "PID", "COMM", "T", "FILE"))
+output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+output_writer.writerow( [ "TIME(s)", "PID", "COMM", "T", "FILE" ] )
+
 
 b["events"].open_perf_buffer(print_event, page_cnt=64)
 exiting = 0
