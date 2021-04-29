@@ -15,6 +15,7 @@
 from __future__ import print_function
 import argparse
 from time import sleep
+import csv
 from bcc import BPF, USDT, utils
 from bcc.syscall import syscall_name
 
@@ -37,6 +38,8 @@ parser = argparse.ArgumentParser(
 parser.add_argument("pid", type=int, help="process id to attach to")
 parser.add_argument("interval", type=int, nargs='?',
     help="print every specified number of seconds")
+parser.add_argument("timeInterval", type=int, nargs='?',
+    help="print for the specified number of seconds")
 parser.add_argument("-l", "--language", choices=languages + ["none"],
     help="language to trace (if none, trace syscalls only)")
 parser.add_argument("-T", "--top", type=int,
@@ -303,13 +306,23 @@ def clear_data():
             bpf["syscounts"].clear()
 
 exit_signaled = False
+if language: lan = language
+else: lan = "none"
+output = open('output/ucalls.csv', mode='w')
 print("Tracing calls in process %d (language: %s)... Ctrl-C to quit." %
       (args.pid, language or "none"))
+output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+output_writer.writerow( [ "Tracing calls in process " + str(args.pid) + " language: " + str(lan) + ")"  ] )
 if extra_message:
     print(extra_message)
+counter = 0
+timeInterval = args.timeInterval
 while True:
     try:
         sleep(args.interval or 99999999)
+        counter += 1
+        if counter == timeInterval:
+            exit_signaled = True
     except KeyboardInterrupt:
         exit_signaled = True
     print()
@@ -317,8 +330,10 @@ while True:
     if args.latency:
         time_col = "TIME (ms)" if args.milliseconds else "TIME (us)"
         print("%-50s %8s %8s" % ("METHOD", "# CALLS", time_col))
+        if counter == 1: output_writer.writerow( [ "METHOD", "# CALLS", time_col ] )
     else:
         print("%-50s %8s" % ("METHOD", "# CALLS"))
+        if counter == 1: output_writer.writerow( [ "METHOD", "# CALLS" ] )
     if args.top:
         data = data[-args.top:]
     for key, value in data:
@@ -326,8 +341,10 @@ while True:
             time = value[1] / 1000000.0 if args.milliseconds else \
                    value[1] / 1000.0
             print("%-50s %8d %6.2f" % (key, value[0], time))
+            output_writer.writerow( [ key, value[0], time ] )
         else:
             print("%-50s %8d" % (key, value[0]))
+            output_writer.writerow( [ key, value[0] ] )
     if args.interval and not exit_signaled:
         clear_data()
     else:
