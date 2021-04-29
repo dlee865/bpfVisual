@@ -23,6 +23,8 @@ python3 ./tools/biotop.py $p_pid $iterations 1 > output/biotop_stdout &
 echo "Running dcsnoop to collect all p_pid's dir cache lookups"
 python3 ./tools/dcsnoop.py -d $iterations -a | grep "$p_pid" > output/dcsnoop_stdout &
 
+echo "Running funccount for the process for $1 seconds."
+./tools/funccount.py -p $p_pid -d $iterations 'vfs_*'  > output/funccount_stdout & 
 
 echo "...running..."
 

@@ -23,6 +23,7 @@ import argparse
 import re
 import signal
 import sys
+import csv
 import traceback
 
 debug = False
@@ -273,6 +274,7 @@ class Tool(object):
         print("Tracing %d functions for \"%s\"... Hit Ctrl-C to end." %
               (self.probe.matched, bytes(self.args.pattern)))
         exiting = 0 if self.args.interval else 1
+        output = open('output/funccount.csv', mode='w')
         seconds = 0
         while True:
             try:
@@ -290,6 +292,8 @@ class Tool(object):
                 print("%-8s\n" % strftime("%H:%M:%S"), end="")
 
             print("%-36s %8s" % ("FUNC", "COUNT"))
+            output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            output_writer.writerow( [ "FUNC","COUNT" ] )
             counts = self.probe.counts()
             for k, v in sorted(counts.items(),
                                key=lambda counts: counts[1].value):
@@ -297,6 +301,7 @@ class Tool(object):
                     continue
                 print("%-36s %8d" %
                       (self.probe.trace_functions[k.value], v.value))
+                output_writer.writerow( [ self.probe.trace_functions[k.value],v.value ] )
 
             if exiting:
                 print("Detaching...")
