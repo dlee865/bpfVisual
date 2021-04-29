@@ -11,6 +11,7 @@ import argparse
 import fnmatch
 import os
 import re
+import csv
 import sys
 
 from bcc import USDT
@@ -32,6 +33,8 @@ parser.add_argument(dest="filter", nargs="?",
         help="A filter that specifies which probes/tracepoints to print")
 args = parser.parse_args()
 
+output = open('output/tplist.csv', mode='w')
+output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 def print_tpoint_format(category, event):
         fmt = open(os.path.join(event_root, category, event, "format")) \
               .readlines()
@@ -45,11 +48,13 @@ def print_tpoint_format(category, event):
                 if field_name.startswith("common_"):
                         continue
                 print("    %s %s;" % (field_type, field_name))
+                output_writer.writerow(["    " + str(field_type) + " " + str(field_name)] )
 
 def print_tpoint(category, event):
         tpoint = "%s:%s" % (category, event)
         if not args.filter or fnmatch.fnmatch(tpoint, args.filter):
                 print(tpoint)
+                output_writer.writerow([str(tpoint)])
                 if args.verbosity > 0:
                         print_tpoint_format(category, event)
 
@@ -67,21 +72,27 @@ def print_usdt_argument_details(location):
         for idx in range(0, location.num_arguments):
                 arg = location.get_argument(idx)
                 print("    argument #%d %s" % (idx + 1, arg))
+                output_writer.writerow(["    argument #" + str(idx+1) + " " + str(arg)] )
 
 def print_usdt_details(probe):
         if args.verbosity > 0:
                 print(probe)
+                output_writer.writerow([str(probe)])
                 if args.verbosity > 1:
                         for idx in range(0, probe.num_locations):
                                 loc = probe.get_location(idx)
                                 print("  location #%d %s" % (idx + 1, loc))
+                                output_writer.writerow(["  location #" + str(idx+1) + " " + str(loc)])
                                 print_usdt_argument_details(loc)
                 else:
                         print("  %d location(s)" % probe.num_locations)
+                        output_writer.writerow(["  " + str(probe.num_locations) + "location(s)"])
                         print("  %d argument(s)" % probe.num_arguments)
+                        output_writer.writerow(["  " + str(probe.num_arguments) + "argument(s)"])
         else:
                 print("%s %s:%s" %
                       (probe.bin_path, probe.provider, probe.name))
+                output_writer.writerow([str(probe.bin_path) + " " + str(probe.provider) + ":" + str(probe.name)])
 
 def print_usdt(pid, lib):
         reader = USDT(path=lib, pid=pid)

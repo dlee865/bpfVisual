@@ -48,8 +48,10 @@ fi
 if [ $run_filesys -ne 0 ]; then
     echo "Running funccount on $p_pid for $trace_dur seconds."
     python3 ./tools/funccount.py -p $p_pid -d $trace_dur 'vfs_*' > output/funccount_stdout &
+    
+    echo "Running tplist on $p_pid."
+    python3 ./tools/tplist.py -v -p $p_pid > output/tplist_stdout &
 fi
-
 ##### UThreads #####
 if [ $run_syscalls -ne 0 ]; then
     echo "Running uthreads on $p_pid of $trace_dur seconds."
@@ -61,7 +63,6 @@ fi
 
 
 
-###### TP List #####
 
 
 
