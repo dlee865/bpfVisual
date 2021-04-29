@@ -49,7 +49,7 @@ if [ $runall -eq 1 ] || [ $run_memoryhier -ne 0 ]; then
 
     ##### BIO Top #####
     echo "Running biotop on $p_pid for $trace_dur seconds."
-    ./tools/biotop.py $p_pid $trace_dur 1 > ./output/biotop_stdout 2> ./output/biotoperr.log &
+    ./tools/biotop.py -C $p_pid 1 $trace_dur 1> ./output/biotop_stdout 2> ./output/biotoperr.log &
 fi
 
 ########## File System #############
@@ -75,14 +75,15 @@ fi
 
 echo "...running..."
 
-while [[ -n $(jobs -r) ]] 
-do
-    sleep 10
-    echo "...running..."
-done
+#while [[ -n $(jobs -r) ]] 
+#do
+#    sleep 1
+#    echo "...running..."
+#done
+
+wait
 
 rm *.txt
-rm *.txt.
 
 echo "Finished."
 

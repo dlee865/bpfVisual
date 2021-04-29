@@ -38,8 +38,7 @@ parser.add_argument("-v", "--verbose", action="store_true",
     help="verbose mode: print the BPF program (for debugging purposes)")
 parser.add_argument("--ebpf", action="store_true",
     help=argparse.SUPPRESS)
-parser.add_argument(
-    "duration", nargs="?", default=10, help="Duration, in seconds, to run")
+parser.add_argument("duration", nargs="?", default=1, help="Duration, in seconds, to run")
 args = parser.parse_args()
 
 usdt = USDT(pid=args.pid)
@@ -141,13 +140,14 @@ exiting = 0
 seconds = 0
 while 1:
     try:
-        sleep(int(args.duration))
-        seconds += int(args.duration)
-        bpf.perf_buffer_poll()
+        sleep(1)
+        seconds += 1
     except KeyboardInterrupt:
         exit()
-
-    if args.duration and seconds >= int(args.duration):
+    print('here')
+    bpf.perf_buffer_poll()
+    print('here2')
+    if seconds >= 1:
         exiting = 1
 
     if exiting:
