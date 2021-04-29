@@ -8,6 +8,7 @@ trace_dur=$2
 run_memoryhier=0
 run_filesys=0
 run_syscalls=0
+runall=1
 
 # check flags to determine which tools to run
 for flag in "$@"
@@ -15,59 +16,61 @@ do
     if [ "$flag" == "-m" ]; then
         echo "Tracing memory hierarchy."
         run_memoryhier=1
+        runall=0
     fi
     if [ "$flag" == "-f" ]; then
         echo "Tracing file system."
         run_filesys=1
+        runall=0
     fi
     if [ "$flag" == "-k" ]; then
         echo "Tracing system calls."
         run_syscalls=1
+        runall=0
     fi
 done
 
 
-echo "Starting benchmark program to run for 100 seconds."
-./benchmark/benchmark > /dev/null &
+#echo "Starting benchmark program to run for 100 seconds."
+#./benchmark/benchmark > /dev/null &
 
 # get the pid based on name of processes passed in
 p_pid=$( pidof "$1" | awk '{print $1}' )
 
+if [ $runall -eq 1 ]; then
+    echo "No tracing flags passed, running all tracing tools."
+fi
+
 ######### MEMORY HIERARCHY ##########
-if [ $run_memoryhier -ne 0 ]; then
+if [ $runall -eq 1 ] || [ $run_memoryhier -ne 0 ]; then
     ##### LLC Stat #####
     echo "Running llcstat on $p_pid for $trace_dur seconds."
-    python3 ./tools/llcstat.py $p_pid $trace_dur > output/llc_stdout &
+    ./tools/llcstat.py $p_pid $trace_dur 1> ./output/llc_stdout 2> ./output/llcstaterr.log &
 
     ##### BIO Top #####
     echo "Running biotop on $p_pid for $trace_dur seconds."
-    python3 ./tools/biotop.py $p_pid $trace_dur 1 > output/biotop_stdout &
+    ./tools/biotop.py $p_pid $trace_dur 1 > ./output/biotop_stdout 2> ./output/biotoperr.log &
 fi
 
 ########## File System #############
-if [ $run_filesys -ne 0 ]; then
+if [ $runall -eq 1 ] || [ $run_filesys -ne 0 ]; then
     echo "Running funccount on $p_pid for $trace_dur seconds."
-    python3 ./tools/funccount.py -p $p_pid -d $trace_dur 'vfs_*' > output/funccount_stdout &
+    ./tools/funccount.py -p $p_pid -d $trace_dur 'vfs_*' 1> ./output/funccount_stdout 2> ./output/funccoungerr.log &
     
-    echo "Running tplist on $p_pid."
-    python3 ./tools/tplist.py -v -p $p_pid > output/tplist_stdout &
+    echo "Running tplist on $p_pid. for $trace_dur seconds."
+    ./tools/tplist.py -v -p $p_pid > ./output/tplist_stdout 2> ./output/err.log &
 fi
 
-##### UThreads #####
-if [ $run_syscalls -ne 0 ]; then
-    echo "Running uthreads on $p_pid of $trace_dur seconds."
-    python3 ./tools/uthreads.py -l none $p_pid $trace_dur > output/uthread_stdout &
+########## Kernel Calls ##########
+if [ $runall -eq 1 ] || [ $run_syscalls -ne 0 ]; then
+    ##### UThreads #####
+    echo "Running uthreads on $p_pid for $trace_dur seconds."
+    ./tools/uthreads.py -l none $p_pid $trace_dur 1> ./output/uthread_stdout 2> ./output/uthreaderr.log &
+
+    ##### Ucalls #####
+    echo "Running ucalls on $p_pid for $trace_dur seconds."
+    ./tools/ucalls.py $p_pid -S 1 $trace_dur 1> ./output/ucalls_stdout 2> ./output/ucallerr.log &
 fi
-
-
-##### Ucalls #####
-
-
-
-
-
-
-
 
 
 echo "...running..."
