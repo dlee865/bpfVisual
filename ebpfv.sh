@@ -21,8 +21,9 @@ python3 ./tools/llcstat.py $p_pid $trace_dur > output/llc_stdout &
 echo "Running biotop on $p_pid for $trace_dur seconds."
 python3 ./tools/biotop.py $p_pid $trace_dur 1 > output/biotop_stdout &
 
-######################################
-
+########## File System #############
+echo "Running funccount on $p_pid for $trace_dur seconds."
+python3 ./tools/funccount.py -p $p_pid -d $trace_dur 'vfs_*' > output/funccount_stdout &
 
 
 
