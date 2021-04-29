@@ -52,10 +52,11 @@ if [ $run_filesys -ne 0 ]; then
     echo "Running tplist on $p_pid."
     python3 ./tools/tplist.py -v -p $p_pid > output/tplist_stdout &
 fi
+
 ##### UThreads #####
 if [ $run_syscalls -ne 0 ]; then
     echo "Running uthreads on $p_pid of $trace_dur seconds."
-    python3 ./tools/uthreads.py -l none $p_pid > output/uthread_stdout &
+    python3 ./tools/uthreads.py -l none $p_pid $trace_dur > output/uthread_stdout &
 fi
 
 

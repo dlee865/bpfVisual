@@ -1,1 +1,0 @@
-There was 12000 bytes allocated at the end of the program.

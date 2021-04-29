@@ -14,9 +14,11 @@
 from __future__ import print_function
 import argparse
 from bcc import BPF, USDT, utils
+from time import sleep
 import ctypes as ct
 import time
 import os
+import csv
 
 languages = ["c", "java"]
 
@@ -36,6 +38,8 @@ parser.add_argument("-v", "--verbose", action="store_true",
     help="verbose mode: print the BPF program (for debugging purposes)")
 parser.add_argument("--ebpf", action="store_true",
     help=argparse.SUPPRESS)
+parser.add_argument(
+    "duration", nargs="?", default=10, help="Duration, in seconds, to run")
 args = parser.parse_args()
 
 usdt = USDT(pid=args.pid)
@@ -123,10 +127,28 @@ def print_event(cpu, data, size):
         tid = "R=%s/N=%s" % (event.runtime_id, event.native_id)
     print("%-8.3f %-16s %-8s %-30s" % (
         time.time() - start_ts, tid, event.type, name))
+    output_writer.writerow( [ time.time() - start_ts, tid, event.type, name ] )
 
 bpf["threads"].open_perf_buffer(print_event)
+
+output = open('output/uthreads.csv', mode='w')
+output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+output_writer.writerow( ["TIME", "ID", "TYPE", "DESCRIPTION"] )
+
+
+
+exiting = 0
+seconds = 0
 while 1:
     try:
+        sleep(int(args.duration))
+        seconds += int(args.duration)
         bpf.perf_buffer_poll()
     except KeyboardInterrupt:
+        exit()
+
+    if args.duration and seconds >= int(args.duration):
+        exiting = 1
+
+    if exiting:
         exit()
