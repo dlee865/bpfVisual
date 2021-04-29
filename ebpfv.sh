@@ -24,6 +24,8 @@ python3 ./tools/biotop.py $p_pid $trace_dur 1 > output/biotop_stdout &
 #echo "Running cachestat for $2 seconds."
 #python3 ./tools/cachestat.py 1 $trace_dur > output/cache_stdout &
 
+echo "Running funccount for the process for $1 seconds."
+./tools/funccount.py -p $p_pid -d $iterations 'vfs_*'  > output/funccount_stdout & 
 
 echo "...running..."
 
