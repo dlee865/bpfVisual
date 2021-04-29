@@ -8,20 +8,21 @@ trace_dur=$2
 echo "Starting benchmark program to run for 100 seconds."
 ./benchmark/benchmark > /dev/null &
 
-p_pid=$(pgrep "$1")
-echo "$p_pid"
 
-echo "Running cachestat for $2 seconds."
-python3 ./tools/cachestat.py 1 $iterations > output/cache_stdout &
+# get the pid based on name of processes passed in
+p_pid=$(pidof "$1")
 
-echo "Running llcstat for $2 seconds."
-python3 ./tools/llcstat.py $p_pid $iterations > output/llc_stdout &
+echo "Running llcstat on $p_pid for $trace_dur seconds."
+python3 ./tools/llcstat.py $p_pid $trace_dur > output/llc_stdout &
 
-echo "Running biotop for p_pid processes for $1 seconds, 1 times."
-python3 ./tools/biotop.py $p_pid $iterations 1 > output/biotop_stdout & 
+echo "Running biotop on $p_pid for $trace_dur seconds."
+python3 ./tools/biotop.py $p_pid $trace_dur 1 > output/biotop_stdout &
 
-echo "Running dcsnoop to collect all p_pid's dir cache lookups"
-python3 ./tools/dcsnoop.py -d $iterations -a | grep "$p_pid" > output/dcsnoop_stdout &
+
+#echo "Running dcsnoop to collect all p_pid's dir cache lookups"
+#python3 ./tools/dcsnoop.py -d $trace_dur -a | grep "$p_pid" > output/dcsnoop_stdout &
+#echo "Running cachestat for $2 seconds."
+#python3 ./tools/cachestat.py 1 $trace_dur > output/cache_stdout &
 
 
 echo "...running..."
