@@ -25,7 +25,8 @@ python3 ./tools/biotop.py $p_pid $trace_dur 1 > output/biotop_stdout &
 echo "Running funccount on $p_pid for $trace_dur seconds."
 python3 ./tools/funccount.py -p $p_pid -d $trace_dur 'vfs_*' > output/funccount_stdout &
 
-
+echo "Running tplist on $p_pid."
+python3 ./tools/tplist.py -v -p $p_pid > output/tplist_stdout &
 
 ##### UThreads #####
 
@@ -34,7 +35,6 @@ python3 ./tools/funccount.py -p $p_pid -d $trace_dur 'vfs_*' > output/funccount_
 
 
 
-###### TP List #####
 
 
 
