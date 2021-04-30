@@ -70,9 +70,9 @@ app.layout = html.Div(children=[
 )
 def display_biotop(n_clicks):
     if n_clicks % 2 == 0:
-        biotop_scatter = px.scatter(biotop_df, x = "AVGms", y = "Kbytes")
+        biotop_scatter = px.scatter(biotop_df, x = "AVGms", y = "Kbytes", title="KiloBytes of Block Input/Output by Time", color="D", legend=true)
     else:
-        biotop_scatter = px.scatter(biotop_df, x = "Kbytes", y = "AVGms")
+        biotop_scatter = px.scatter(biotop_df, x = "Kbytes", y = "AVGms", title="KiloBytes of Block Input/Output by Time", color="D",legend=true)
       
     return biotop_scatter
 
@@ -82,7 +82,7 @@ def display_biotop(n_clicks):
 )
 def display_llcstat(n_clicks):
     if n_clicks % 2 == 0:
-        llcstat = px.bar(llcstat_df, x = "CPU", y = "HIT%")
+        llcstat = px.bar(llcstat_df, x = "CPU", y = "HIT%", title="LLC Cache Hit/Miss Ratio")
     else:
         llcstat = px.bar(llcstat_df, x = "CPU", y = "HIT%")
 
@@ -94,9 +94,9 @@ def display_llcstat(n_clicks):
 )
 def display_funccount(n_clicks):
     if n_clicks % 2 == 0:
-        funccount = px.bar(funccount_df, x = "FUNC", y = "COUNT")
+        funccount = px.bar(funccount_df, x = "FUNC", y = "COUNT", title="Number of Virtual File System Calls")
     else:
-        funccount = px.bar(funccount_df, x = "COUNT", y = "FUNC")
+        funccount = px.bar(funccount_df, x = "COUNT", y = "FUNC", title="Number of Virtual File System Calls")
     
     return funccount
 
@@ -106,9 +106,9 @@ def display_funccount(n_clicks):
 )
 def display_ucalls(n_clicks):
     if n_clicks % 2 == 0:
-        ucalls = px.bar(ucalls_df, x = "METHOD", y = "# CALLS")
+        ucalls = px.bar(ucalls_df, x = "METHOD", y = "# CALLS", title="Number of System Calls Made")
     else:
-        ucalls = px.bar(ucalls_df, x = "# CALLS", y = "METHOD")
+        ucalls = px.bar(ucalls_df, x = "# CALLS", y = "METHOD", title="Number of System Calls Made")
       
     return ucalls
 
