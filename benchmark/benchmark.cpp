@@ -10,13 +10,14 @@
 using namespace std;
 
 void threadFunc( int lengthOfLoop, int threadNum ) {
-    char buf1[100], buf2[100];
-    sprintf( buf1, "thread%dtestfile.txt.", threadNum );	
+	int randomBuff = rand() % 1000000;
+    char buf1[1000000000], buf2[100000000];
+    sprintf( buf1, "thread%dtestfile.txt", threadNum );	
     for( int i = 0; i < lengthOfLoop; i++ ) {
-	int fd1 = open(buf1, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	sprintf( buf2, "I have written to this file %d times.", i+1 );	
-    	write(fd1, buf2, strlen(buf2));
-	close(fd1);
+		int fd1 = open(buf1, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		sprintf( buf2, "I have written to this file %d times.", i+1 );	
+ 	  	write(fd1, buf2, randomBuff);
+		close(fd1);
     }	
 }
 
@@ -39,6 +40,7 @@ int main( int argc, char** argv ) {
 
 
 	int randomNumber = rand() % 50000;
+
 	if(randomNumber > 30000 && v.size() > 0) { delete(v[v.size()-1]); v.pop_back(); }
     	ptr = new char[500];
 	if( count%3 == 0 && v.size() > 0 ) { delete(v[v.size()-1]); v.pop_back(); }

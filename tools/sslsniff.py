@@ -227,7 +227,7 @@ def print_event(cpu, data, size, rw, evt):
         data = event.v0.decode('utf-8', 'replace')
     print(fmt % (rw, time_s, event.comm.decode('utf-8', 'replace'),
                  event.pid, event.len, s_mark, data, e_mark))
-    output_writer.writerow( [ str(rw), str(time_s), str(event.com.decode('utf-8', 'replace'), str(event.pid), str(event.len), str(s_mark), str(data), str(e_mark) ] )
+    output_writer.writerow( [ str(rw), str(time_s), str(event.com.decode('utf-8', 'replace'), str(event.pid), str(event.len), str(s_mark), str(data), str(e_mark) ) ] )
 
 b["perf_SSL_write"].open_perf_buffer(print_event_write)
 b["perf_SSL_read"].open_perf_buffer(print_event_read)

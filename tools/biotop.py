@@ -224,9 +224,9 @@ while 1:
                 k.major, k.minor, diskname, v.io, v.bytes / 1024, avg_ms))
 
             output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-            output_writer.writerow( [ (k.pid,
+            output_writer.writerow( [ k.pid,
                 k.name.decode('utf-8', 'replace'), "W" if k.rwflag else "R",
-                k.major, k.minor, diskname, v.io, v.bytes / 1024, avg_ms) ] )
+                k.major, k.minor, diskname, v.io, v.bytes / 1024, avg_ms ] )
         line += 1
         if line >= maxrows:
             break
