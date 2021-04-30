@@ -17,6 +17,7 @@ from __future__ import print_function
 from bcc import BPF
 import argparse
 import binascii
+import csv
 import textwrap
 
 # arguments
@@ -34,6 +35,8 @@ parser = argparse.ArgumentParser(
     formatter_class=argparse.RawDescriptionHelpFormatter,
     epilog=examples)
 parser.add_argument("-p", "--pid", type=int, help="sniff this PID only.")
+parser.add_argument("timeInterval", nargs="?", default=1,
+    help="interval to run for, in seconds")
 parser.add_argument("-c", "--comm",
                     help="sniff only commands matching string.")
 parser.add_argument("-o", "--no-openssl", action="store_false", dest="openssl",
@@ -175,9 +178,12 @@ TASK_COMM_LEN = 16  # linux/sched.h
 MAX_BUF_SIZE = 464  # Limited by the BPF stack
 
 
+output = open('output/sslsniff.csv', mode='w')
 # header
 print("%-12s %-18s %-16s %-6s %-6s" % ("FUNC", "TIME(s)", "COMM", "PID",
                                        "LEN"))
+output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+output_writer.writerow( [ "FUNC","TIME(s)", "COMM", "PID", "LEN" ] )
 
 # process event
 start = 0
@@ -221,12 +227,18 @@ def print_event(cpu, data, size, rw, evt):
         data = event.v0.decode('utf-8', 'replace')
     print(fmt % (rw, time_s, event.comm.decode('utf-8', 'replace'),
                  event.pid, event.len, s_mark, data, e_mark))
+    output_writer.writerow( [ str(rw), str(time_s), str(event.com.decode('utf-8', 'replace'), str(event.pid), str(event.len), str(s_mark), str(data), str(e_mark) ] )
 
 b["perf_SSL_write"].open_perf_buffer(print_event_write)
 b["perf_SSL_read"].open_perf_buffer(print_event_read)
+countdown = args.timeInterval
 while 1:
     try:
         b.perf_buffer_poll()
+        sleep(1)
+        countdown -= 1
+        if countdown == 0:
+            exit()
     except KeyboardInterrupt:
         exit()
 
