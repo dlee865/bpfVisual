@@ -13,7 +13,7 @@ llcstat_df = pd.read_csv("./output/llc_stat.csv")
 funccount_df = pd.read_csv("./output/funccount.csv")
 #tplist_df = pd.read_csv("./output/tplist.csv")
 #uthreads_df = pd.read_csv("./output/uthreads.csv")
-#ucalls_df = pd.read_csv("./output/ucalls.csv")
+ucalls_df = pd.read_csv("./output/ucalls.csv")
 #stackcount_df = pd.read_csv("./output/stackcount.csv")
 #sslsniff_df = pd.read_csv("./output/sslsniff.csv")
 
@@ -21,43 +21,48 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
-#llc_bar = px.bar()
 
 app.layout = html.Div(children=[
+    html.H1('ebpfVisual', style={'color': 'black', 'background': 'grey', 'display': 'flex', 'justify-content': 'center'}),
     # All elements from the top of the page
     html.Div([
+        html.H2('Memory Hierarchy'),
+    ]),
+
+    html.Div([
         html.Div([
-            html.H1(children='Memory Hierarchy'),
-            
             dcc.Graph(
                 id='biotop',
             ),  
+            html.Button("Switch Axis", id='btn', n_clicks=0)
         ], className='six columns'),
         html.Div([
-            #html.H1(children='Memory Hierarchy'),
-
             dcc.Graph(
                 id='llcstat',
             ),  
         ], className='six columns'),
     ], className='row'),
+
+    html.Div([
+        html.H2('File System')
+    ]),
     # New Div for all elements in the new 'row' of the page
     html.Div([
+        #html.H2('File System'),
         html.Div([
-            #html.H1(children='Hello Dash'),
-
-            #html.Div(children='''
-            #    Dash: A web application framework for Python.
-            #'''),
-
             dcc.Graph(
                 id='funccount',
             ),
         ], className='six columns'),
+        #html.H2('File System'),
+        html.Div([
+            dcc.Graph(
+                id='ucalls',
+            ),
+        ], className='six columns'),
     ], className='row'),
-    
-    html.Button("Switch Axis", id='btn', n_clicks=0)
-])
+
+],)
 
 @app.callback(
     Output("biotop", "figure"), 
@@ -80,7 +85,7 @@ def display_llcstat(n_clicks):
         llcstat = px.bar(llcstat_df, x = "CPU", y = "HIT%")
     else:
         llcstat = px.bar(llcstat_df, x = "CPU", y = "HIT%")
-      
+
     return llcstat
 
 @app.callback(
@@ -91,10 +96,23 @@ def display_funccount(n_clicks):
     if n_clicks % 2 == 0:
         funccount = px.bar(funccount_df, x = "FUNC", y = "COUNT")
     else:
-        funccount = px.bar(funccount_df, x = "FUNC", y = "COUNT")
-      
+        funccount = px.bar(funccount_df, x = "COUNT", y = "FUNC")
+    
     return funccount
 
+@app.callback(
+    Output("ucalls", "figure"), 
+    [Input("btn", "n_clicks")]
+)
+def display_ucalls(n_clicks):
+    if n_clicks % 2 == 0:
+        ucalls = px.bar(ucalls_df, x = "METHOD", y = "# CALLS")
+    else:
+        ucalls = px.bar(ucalls_df, x = "# CALLS", y = "METHOD")
+      
+    return ucalls
+
+'''
 @app.callback(
     Output("tplist", "figure"), 
     [Input("btn", "n_clicks")]
@@ -106,6 +124,6 @@ def display_llcstat(n_clicks):
         tplist = px.bar(tplist_df, x = "CPU", y = "HIT%")
       
     return tplist
-
+'''
 
 app.run_server(debug=True)

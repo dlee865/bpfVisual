@@ -84,20 +84,20 @@ for p in "${p_pid[@]}"; do
     ########## Kernel Calls ##########
     if [ $runall -eq 1 ] || [ $run_syscalls -ne 0 ]; then
         ##### UThreads #####
-        echo "Running uthreads on $p for $trace_dur seconds."
-        ./tools/uthreads.py -l none $p $trace_dur 1> ./output/uthread_stdout 2> ./output/uthreaderr.log &
+        #echo "Running uthreads on $p for $trace_dur seconds."
+        #./tools/uthreads.py -l none $p $trace_dur 1> ./output/uthread_stdout 2> ./output/uthreaderr.log &
 
         ##### Ucalls #####
         echo "Running ucalls on $p for $trace_dur seconds."
-        ./tools/ucalls.py -S $p 1 $trace_dur 1> ./output/ucalls_stdout 2> ./output/ucallerr.log &
+        ./tools/ucalls.py -S $p 1 $trace_dur -L -m 1> ./output/ucalls_stdout 2> ./output/ucallerr.log &
 
         ##### Stackcount #####
-        echo "Running stackcount for c:malloc on $p for $trace_dur seconds."
-        ./tools/stackcount.py -p $p -D $trace_dur c:malloc 1> ./output/stackcount_stdout 2> ./output/stackcounterr.log
+        #echo "Running stackcount for c:malloc on $p for $trace_dur seconds."
+        #./tools/stackcount.py -p $p -D $trace_dur c:malloc 1> ./output/stackcount_stdout 2> ./output/stackcounterr.log
 
         ###### ssl sniff ######
-        echo "Running SSL sniff on $p for $trace_dur seconds."
-        ./tools/sslsniff.py -p $p $trace_dur 1> ./output/sslsniff_stdout 2> ./output/sslsnifferr.log &
+        #echo "Running SSL sniff on $p for $trace_dur seconds."
+        #./tools/sslsniff.py -p $p $trace_dur 1> ./output/sslsniff_stdout 2> ./output/sslsnifferr.log &
     fi
 
 done
@@ -113,6 +113,8 @@ done
 echo "Finished trace, analyzing data..."
 
 #./visualize.py
+
+#xdc-open http://localhost:8050
 
 #echo "Running dcsnoop to collect all p_pid's dir cache lookups"
 #python3 ./tools/dcsnoop.py -d $trace_dur -a | grep "$p_pid" > output/dcsnoop_stdout &

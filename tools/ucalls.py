@@ -312,7 +312,7 @@ output = open('output/ucalls.csv', mode='w')
 print("Tracing calls in process %d (language: %s)... Ctrl-C to quit." %
       (args.pid, language or "none"))
 output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-output_writer.writerow( [ "Tracing calls in process " + str(args.pid) + " language: " + str(lan) + ")"  ] )
+#output_writer.writerow( [ "Tracing calls in process " + str(args.pid) + " language: " + str(lan) + ")"  ] )
 if extra_message:
     print(extra_message)
 counter = 0
@@ -341,10 +341,12 @@ while True:
             time = value[1] / 1000000.0 if args.milliseconds else \
                    value[1] / 1000.0
             print("%-50s %8d %6.2f" % (key, value[0], time))
-            output_writer.writerow( [ key, value[0], time ] )
+            if exit_signaled:
+                output_writer.writerow( [ key, value[0], time ] )
         else:
             print("%-50s %8d" % (key, value[0]))
-            output_writer.writerow( [ key, value[0] ] )
+            if exit_signaled:
+                output_writer.writerow( [ key, value[0] ] )
     if args.interval and not exit_signaled:
         clear_data()
     else:
