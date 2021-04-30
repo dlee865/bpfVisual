@@ -22,10 +22,13 @@ import argparse
 import re
 import signal
 import sys
+import csv
 import traceback
 
 debug = False
 
+output = open('output/stackcount.csv', mode='w')
+output_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
 class Probe(object):
     def __init__(self, pattern, kernel_stack, user_stack, use_regex=False,
                  pid=None, per_pid=False, cpu=None):
@@ -287,19 +290,25 @@ class Tool(object):
         print("  ", end="")
         if self.args.verbose:
             print("%-16x " % addr, end="")
+            output_writer.writerow( [ str(addr) ] )
         if self.args.offset:
             print("%s" % self.probe.bpf.ksym(addr, show_offset=True))
+            output_writer.writerow( [ str(self.probe.bpf.ksym(addr, show_offset=True)) ] )
         else:
             print("%s" % self.probe.bpf.ksym(addr))
+            output_writer.writerow( [ str(self.probe.bpf.ksym(addr)) ] )
 
     def _print_uframe(self, addr, pid):
         print("  ", end="")
         if self.args.verbose:
             print("%-16x " % addr, end="")
+            output_writer.writerow( [ str(addr) ] )
         if self.args.offset:
             print("%s" % self.probe.bpf.sym(addr, pid, show_offset=True))
+            output_writer.writerow( [ str(self.probe.bpf.sym(addr, pid, show_offset=True)) ] )
         else:
             print("%s" % self.probe.bpf.sym(addr, pid))
+            output_writer.writerow( [ str(self.probe.bpf.sym(addr, pid)) ] )
 
     @staticmethod
     def _signal_ignore(signal, frame):
@@ -307,6 +316,7 @@ class Tool(object):
 
     def _print_comm(self, comm, pid):
         print("    %s [%d]" % (comm, pid))
+            output_writer.writerow( [ str(comm), str(pid) ] )
 
     def run(self):
         self.probe.load()
@@ -314,6 +324,8 @@ class Tool(object):
         if not self.args.folded:
             print("Tracing %d functions for \"%s\"... Hit Ctrl-C to end." %
                   (self.probe.matched, self.args.pattern))
+            output_writer.writerow( [ "Tracing " + str(self.prob.matched) + " functions for " + str( self.prob.matched ) + "..." ] )
+
         b = self.probe.bpf
         exiting = 0 if self.args.interval else 1
         seconds = 0
@@ -355,7 +367,7 @@ class Tool(object):
                     print("%s %d" % (";".join(line), v.value))
                 else:
                     # print multi-line stack output
-                    for addr in kernel_stack:
+                    for addr in kernel_stack:e
                         self._print_kframe(addr)
                     if self.need_delimiter:
                         print("    --")
@@ -364,6 +376,7 @@ class Tool(object):
                     if not self.args.pid and k.tgid != 0xffffffff:
                         self._print_comm(k.name, k.tgid)
                     print("    %d\n" % v.value)
+                    output_writer.writerow( [ str(v.value) ] )
             counts.clear()
 
             if exiting:
