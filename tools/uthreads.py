@@ -144,10 +144,10 @@ while 1:
         seconds += 1
     except KeyboardInterrupt:
         exit()
-    print('here')
+    
     bpf.perf_buffer_poll()
-    print('here2')
-    if seconds >= 1:
+
+    if seconds >= args.duration:
         exiting = 1
 
     if exiting:

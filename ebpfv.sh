@@ -30,7 +30,6 @@ do
     fi
 done
 
-
 #echo "Starting benchmark program to run for 100 seconds."
 #./benchmark/benchmark > /dev/null &
 
@@ -49,7 +48,7 @@ if [ $runall -eq 1 ] || [ $run_memoryhier -ne 0 ]; then
 
     ##### BIO Top #####
     echo "Running biotop on $p_pid for $trace_dur seconds."
-    ./tools/biotop.py -C $p_pid 1 $trace_dur 1> ./output/biotop_stdout 2> ./output/biotoperr.log &
+    ./tools/biotop.py -C $p_pid $trace_dur 1 1> ./output/biotop_stdout 2> ./output/biotoperr.log &
 fi
 
 ########## File System #############
@@ -75,19 +74,15 @@ fi
 
 echo "...running..."
 
-#while [[ -n $(jobs -r) ]] 
-#do
-#    sleep 1
-#    echo "...running..."
-#done
-
-wait
+while [[ -n $(jobs -r) ]] 
+do
+    sleep 5
+    echo "...running..."
+done
 
 rm *.txt
 
 echo "Finished."
-
-
 
 #echo "Running dcsnoop to collect all p_pid's dir cache lookups"
 #python3 ./tools/dcsnoop.py -d $trace_dur -a | grep "$p_pid" > output/dcsnoop_stdout &
